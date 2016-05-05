@@ -7,14 +7,14 @@ var JTask = require('../utils/ITask');
 var tool = require("../utils/tool");
 
 
-var JAccountAddFieldAsync = require('./AccountAddFieldAsync');
+var JAccountAddFieldAsyncAwait = require('./AccountAddFieldAsyncAwait');
 var JAccountAddFieldPromise = require('./AccountAddFieldPromise');
 
 
 var cronList = {
     '0 */5 * * * *': [
-        { name: "JAccountAddFieldAsync", run: JAccountAddFieldAsync.analysisAllUserAsync, para: { arg1: "arg1" } },
-        { name: "JAccountAddFieldPromise", run: JAccountAddFieldAsync.analysisAllUserPromise, para: { arg1: "arg1" } },
+        { name: "JAccountAddFieldAsyncAwait", run: JAccountAddFieldAsync.analysisAllUserAsyncAwait, para: { arg1: "arg1" } },
+        { name: "JAccountAddFieldPromise", run: JAccountAddFieldPromise.analysisAllUserPromise, para: { arg1: "arg1" } },
     ],
 };
 var jobs = [];
