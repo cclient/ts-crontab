@@ -1,4 +1,4 @@
-var gulp = require('gulp')
+let gulp = require('gulp')
   , sourcemaps = require('gulp-sourcemaps')
   , ts = require('gulp-typescript')
   , typescript = require('typescript')
@@ -7,7 +7,7 @@ var gulp = require('gulp')
   , path = require('path')
   , spawn = require('child_process').spawn;
 
-var lib = {
+let lib = {
     // project: ts.createProject('./src/lib/tsconfig.json', { typescript: typescript }),
     project: ts.createProject('./tsconfig.json', { typescript: typescript }),
     bin: "./bin/ts-async-github-sample",
@@ -41,7 +41,7 @@ function clean(opts) {
 
 function build(opts) {
     return function () {
-        var tee = gulp
+        let tee = gulp
             .src(opts.src, { base: opts.base })
             .pipe(sourcemaps.init())
             .pipe(ts(opts.project));
@@ -57,7 +57,7 @@ function build(opts) {
 
 function test(opts) {
     return function (done) {
-        var args = [opts.bin];
+        let args = [opts.bin];
         console.log("Executing test...");
         spawn(process.argv[0], args, { stdio: "inherit" }).on("exit", function (code) {
             done(code !== 0 ? "Error executing script." : undefined);

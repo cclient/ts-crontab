@@ -1,72 +1,67 @@
-///<TypeScriptExperimentalAsyncFunctions>true</TypeScriptExperimentalAsyncFunctions>
-/// <reference path='../../typings/node/node.d.ts' />
-/// <reference path='../../typings/mongodb/mongodb.d.ts' />
-/// <reference path='../../typings/redis/redis.d.ts' />
+'use strict'
 
-'use strict';
-var mongodb = require("mongodb");
-var tool = require("../utils/tool");
-var CTask = require("../utils/ITask");
-var myasync = require("../utils/myasync");
+import { Db, Collection } from "mongodb"
+import { accessWebAPI } from "../utils/tool"
+import GetDB from "../utils/mongo"
+import Task from "../utils/Task"
+import Async from "../utils/myasync"
 
-var ayalysictype = "user"
-//then版 这个没啥用，只是示例
-async function analysisAllUserPromise() {
+//then版 类 async.whilst 方式遍历
+export default async function analysisAllUserPromise() {
     let endtime = new Date().getTime() / 1000;
     let AccountCol, LastAnalysisTimeCol;
     let begintime;
-    let arg = await tool.GetDB();
+    let arg = await GetDB("bi");
     let db = arg.db;
     LastAnalysisTimeCol = db.collection('lastanalysistime');
     AccountCol = db.db("user").collection('account');
     //得到上次分析时间 实现目的 第一次分析完后，写入分析时间，下一次开始从这个时间之后过滤数据再分析
-    await new Promise(function(resovle, reject) {
-        LastAnalysisTimeCol.findOne({ jobtype: ayalysictype }, function(err, lastinfo) {
+    await new Promise((resolve, reject) => {
+        LastAnalysisTimeCol.findOne({ jobtype: "user" }, (err, lastinfo) => {
             begintime = (lastinfo) ? lastinfo.time : 0; //有数据，从这数据开始，到现在。
-            resovle(begintime)
+            resolve(begintime);
         })
-    }).then(function(begintime: number) {
-        return new Promise(function(resovle, reject) {
-            AccountCol.distinct('telphone', function(err, telphones) {
-                resovle(telphones);
+    }).then(function (begintime: number) {
+        return new Promise((resolve, reject) => {
+            AccountCol.distinct('telphone', (err, telphones) => {
+                resolve(telphones);
             })
         })
-    }).then(function(telphones: Array<any>) {
+    }).then(function (telphones: Array<any>) {
         console.log(telphones.length);
         let num = -1;
-        return myasync.whilst(
-            function() { return (num++ < telphones.length); },
-            function() {
-                return new Promise(function(resovle, reject) {
-                    tool.accessWebAPI('www.google.com', '/bytelphone/' + telphones[num], 'GET', null, function(err, apidata) {
+        return Async.whilst(
+            function () { return (num++ < telphones.length - 1); },
+            function () {
+                return new Promise((resolve, reject) => {
+                    accessWebAPI('www.google.com', '/bytelphone/' + telphones[num], 'GET', null, (err, apidata) => {
                         if (!err && apidata.item) {
-                            resovle(apidata.item);
+                            resolve(apidata.item);
                         } else {
-                            resovle(null)
+                            resolve(null);
                         }
                     })
-                }).then(function(item: any) {
-                    var lastVisitAt = (new Date(item.lastVisitAt)).getTime() / 1000;
-                    return new Promise(function(resovle, reject) {
-                        AccountCol.update({ _id: item.id }, { $set: { field: item.field } }, function(err, count) {
-                            resovle(count);
+                }).then(function (item: any) {
+                    let lastVisitAt = (new Date(item.lastVisitAt)).getTime() / 1000;
+                    return new Promise((resolve, reject) => {
+                        AccountCol.update({ _id: item.id }, { $set: { field: item.field } }, (err, count) => {
+                            resolve(count);
                         })
                     })
                 })
             }
         )
-    }).then(function() {
-        return new Promise(function(resovle, reject) {
-            LastAnalysisTimeCol.update({ jobtype: ayalysictype }, { $set: { time: endtime } }, { upsert: true }, function(err, doc) {
+    }).then(function () {
+        return new Promise((resolve, reject) => {
+            LastAnalysisTimeCol.update({ jobtype: "user" }, { $set: { time: endtime } }, { upsert: true }, (err, doc) => {
                 db.close();
-                resovle()
+                resolve();
             })
         })
     })
 }
 
-module.exports.analysisAllUserPromise = analysisAllUserPromise
 if (!module.parent) {
-    var t1 = new CTask("job test", analysisAllUserPromise)
-    console.log(" job test start" + t1.start())
+    let t = new Task("job test", analysisAllUserPromise);
+    console.log(" job test start" + t.start());
 }

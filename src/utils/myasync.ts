@@ -1,17 +1,13 @@
-///<TypeScriptExperimentalAsyncFunctions>true</TypeScriptExperimentalAsyncFunctions>
-/// <reference path='../../typings/node/node.d.ts' />
-
 'use strict';
-var whilst = async function(test, callback) {
+let whilst = async (test, callback) => {
     while (test()) {
-        // await callback()     
         try {
             await callback();
         } catch (err) {
-            console.log("async whilst err "+err)
+            console.log("async whilst err " + err)
         }
     }
     return "success"
 };
 
-module.exports.whilst = whilst
+export default { whilst }
