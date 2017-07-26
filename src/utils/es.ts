@@ -1,4 +1,6 @@
-import elasticsearch = require("elasticsearch")
+'use strict'
+
+import * as elasticsearch from "elasticsearch";
 
 export function getESConnection() {
     let client = new elasticsearch.Client({
