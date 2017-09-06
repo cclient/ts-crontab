@@ -10,9 +10,7 @@ typescript 实现的定时任务
 AccountAddFieldPromise promise版
 AccountAddFieldPromise async/await版
 
-# 编译
-
-## 切换置项目dir
+# 编译(切换置项目dir)
 
 ## gulp build
 
